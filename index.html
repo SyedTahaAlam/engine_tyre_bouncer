@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#3a2414">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Engine Tyre Bouncer</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <section id="screen-splash" class="screen active">
+    <div class="splash-logo">⚙️</div>
+    <h1>ENGINE<br>TYRE BOUNCER</h1>
+    <p class="sub">Power the wheel. Time the release.</p>
+    <div class="loadbar"><div id="splash-fill"></div></div>
+    <p class="tap">Tap to start</p>
+  </section>
+
+  <section id="screen-menu" class="screen">
+    <h1 class="title">ENGINE<br>TYRE BOUNCER</h1>
+    <div class="menu-stats">🪙 <span id="menu-coins">0</span> &nbsp; ★ <span id="menu-stars">0</span></div>
+    <div class="menu-buttons">
+      <button class="btn big primary" id="m-play">▶ PLAY <small id="m-play-level"></small></button>
+      <button class="btn big" id="m-upgrades">🔧 UPGRADES</button>
+      <button class="btn big" id="m-levels">🗺️ LEVELS</button>
+      <button class="btn big" id="m-custom">🎨 CUSTOMIZE</button>
+      <button class="btn big" id="m-settings">⚙️ SETTINGS</button>
+    </div>
+  </section>
+
+  <section id="screen-levels" class="screen">
+    <header class="bar"><button class="btn back" data-back>‹</button><h2>SELECT LEVEL</h2><span></span></header>
+    <div id="level-grid" class="grid"></div>
+  </section>
+
+  <section id="screen-garage" class="screen">
+    <header class="bar"><button class="btn back" data-back>‹</button><h2>GARAGE</h2><span class="coins">🪙 <b id="garage-coins">0</b></span></header>
+    <div id="upgrade-list" class="list"></div>
+  </section>
+
+  <section id="screen-custom" class="screen">
+    <header class="bar"><button class="btn back" data-back>‹</button><h2>CUSTOMIZE</h2><span></span></header>
+    <div class="preview"><canvas id="preview-canvas"></canvas></div>
+    <div class="list" id="custom-list"></div>
+  </section>
+
+  <section id="screen-settings" class="screen">
+    <header class="bar"><button class="btn back" data-back>‹</button><h2>SETTINGS</h2><span></span></header>
+    <div class="list settings">
+      <label class="row"><span>Sound</span><input type="checkbox" id="set-sound"></label>
+      <label class="row"><span>Volume</span><input type="range" id="set-volume" min="0" max="100"></label>
+      <label class="row"><span>Vibration</span><input type="checkbox" id="set-vibration"></label>
+      <label class="row"><span>Particles</span><select id="set-particles"><option value="high">High</option><option value="low">Low (faster)</option></select></label>
+      <button class="btn danger" id="set-reset">RESET PROGRESS</button>
+    </div>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <div class="hud">
+      <div class="hud-row">
+        <button class="icon-btn" id="btn-pause" aria-label="Pause">❚❚</button>
+        <div class="lvl" id="hud-level">LEVEL 1</div>
+        <div class="prog"><div id="hud-prog-fill"></div><span id="hud-prog-text">0%</span></div>
+        <div class="coins">🪙 <span id="hud-coins">0</span></div>
+      </div>
+      <div class="hud-row gauges">
+        <div class="gauge" id="g-fuel"><span>⛽</span><div class="gbar"><i id="fuel-fill"></i></div></div>
+        <div class="gauge" id="g-temp"><span>🌡️</span><div class="gbar"><i id="temp-fill"></i></div></div>
+        <div class="gauge" id="g-health"><span>❤️</span><div class="gbar"><i id="health-fill"></i></div></div>
+        <div class="gauge" id="g-time" hidden><span>⏱️</span><b id="time-text">0</b></div>
+      </div>
+    </div>
+    <div class="scene" id="scene-wrap">
+      <canvas id="scene"></canvas>
+      <div id="feedback"></div>
+      <div id="hint"></div>
+      <div class="readout"><div>RPM <b id="rpm-text">0</b></div><div>POWER <b id="power-text">0%</b></div><div id="chain-text"></div></div>
+      <div class="maint" id="maint" hidden>
+        <button class="btn small" id="btn-filter">🧹 FILTER</button>
+        <button class="btn small" id="btn-belt">🔩 BELT</button>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="meter-label" id="meter-label">TIMING</div>
+      <div class="meter" id="meter"><div class="mz mz-green"><div class="mz-perfect"></div></div><div class="meter-ind" id="meter-ind"></div></div>
+      <div class="throttle-row"><span>THROTTLE</span><input type="range" id="throttle" min="0" max="100" value="40"><b id="throttle-val">40%</b></div>
+      <div class="btn-row">
+        <button class="btn ctl" id="btn-fuel">FUEL<br><b>OFF</b></button>
+        <button class="btn ctl start" id="btn-start">HOLD TO<br>START</button>
+        <button class="btn ctl release" id="btn-release">RELEASE</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="modal-pause" class="modal"><div class="card">
+    <h2>PAUSED</h2>
+    <button class="btn big primary" id="p-resume">▶ RESUME</button>
+    <button class="btn big" id="p-restart">↻ RESTART</button>
+    <button class="btn big" id="p-upgrades">🔧 GARAGE</button>
+    <button class="btn big" id="p-settings">⚙️ SETTINGS</button>
+    <button class="btn big" id="p-menu">⌂ MENU</button>
+  </div></div>
+
+  <div id="modal-complete" class="modal"><div class="card">
+    <h2>JOB COMPLETE!</h2>
+    <div class="stars" id="c-stars"></div>
+    <p id="c-rating" class="rating"></p>
+    <table class="results">
+      <tr><td>Score</td><td id="c-score"></td></tr>
+      <tr><td>Coins earned</td><td id="c-coins"></td></tr>
+      <tr><td>Perfect / Good / Weak / Fail</td><td id="c-counts"></td></tr>
+      <tr><td>Engine health</td><td id="c-health"></td></tr>
+      <tr><td>Fuel left</td><td id="c-fuel"></td></tr>
+      <tr><td>Time</td><td id="c-time"></td></tr>
+    </table>
+    <button class="btn big primary" id="c-next">NEXT LEVEL ▶</button>
+    <div class="two"><button class="btn" id="c-retry">↻ RETRY</button><button class="btn" id="c-upgrades">🔧 UPGRADES</button><button class="btn" id="c-menu">⌂ MENU</button></div>
+  </div></div>
+
+  <div id="modal-failed" class="modal"><div class="card">
+    <h2 class="bad">JOB FAILED</h2>
+    <p id="f-reason" class="rating"></p>
+    <p id="f-tip" class="tip"></p>
+    <button class="btn big primary" id="f-retry">↻ TRY AGAIN</button>
+    <div class="two"><button class="btn" id="f-upgrades">🔧 UPGRADES</button><button class="btn" id="f-menu">⌂ MENU</button></div>
+  </div></div>
+
+  <div id="modal-intro" class="modal"><div class="card">
+    <h2 id="i-title">LEVEL 1</h2>
+    <p id="i-text" class="rating"></p>
+    <ol class="steps"><li>Turn <b>FUEL</b> on</li><li>Set throttle to <b>15–60%</b></li><li>Hold <b>START</b>, let go in the <b class="g">GREEN</b></li><li>Press <b>RELEASE</b> when the marker is in the <b class="g">GREEN</b></li></ol>
+    <button class="btn big primary" id="i-go">LET'S WORK</button>
+  </div></div>
+
+  <div id="modal-confirm" class="modal"><div class="card">
+    <h2>RESET PROGRESS?</h2><p class="rating">All coins, stars and upgrades will be lost.</p>
+    <button class="btn big danger" id="x-yes">YES, RESET</button><button class="btn big" id="x-no">CANCEL</button>
+  </div></div>
+
+  <div id="toast"></div>
+</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
