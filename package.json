@@ -1,0 +1,11 @@
+{
+  "name": "engine-tyre-bouncer",
+  "version": "1.0.0",
+  "description": "Mobile construction/engine timing game (HTML5, installable PWA)",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}
